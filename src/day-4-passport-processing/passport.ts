@@ -14,33 +14,33 @@ function isValidYear(year: number, min: number, max: number): boolean {
 }
 
 function isValidHeight(height: string): boolean {
-    const sufix = height.slice(-2);
-    const number = Number(height.slice(0, -2));
-    if (isNaN(number)) return false;
-    if (sufix === "cm") {
-        return number >= 150 && number <= 193;
-    } else if (sufix === "in") {
-        return number >= 59 && number <= 76;
+    const suffix = height.slice(-2);
+    const _height = Number(height.slice(0, -2));
+    if (isNaN(_height)) return false;
+    if (suffix === "cm") {
+        return _height >= 150 && _height <= 193;
+    } else if (suffix === "in") {
+        return _height >= 59 && _height <= 76;
     } else {
         return false;
     }
 }
 
-function isValidHairColor(color: string): boolean {
-    const prefix = color[0];
+function isValidHairColor(hcl: string): boolean {
+    const prefix = hcl[0];
     if (prefix !== "#") return false;
-    return /[0-9a-f]{6}/.test(color.slice(1));
+    return /^[0-9a-f]{6}$/i.test(hcl.slice(1));
 }
 
-function isValidEyeColor(color: string): boolean {
+function isValidEyeColor(ecl: string): boolean {
     const valid = ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"];
-    return valid.includes(color);
+    return valid.includes(ecl);
 }
 
 function isBasicPassport(o: any, ignoreCid: boolean): o is BasicPassport {
     let properties = ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid", "cid"];
     if (ignoreCid) properties = properties.filter((p) => p !== "cid");
-    return properties.every((p) => typeof o[p] === "string");
+    return properties.every((p) => o[p] !== undefined);
 }
 
 export function isPassport(
@@ -48,8 +48,6 @@ export function isPassport(
     ignoreCid: boolean,
     strictValidation = false
 ): boolean {
-    let properties = ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid", "cid"];
-    if (ignoreCid) properties = properties.filter((p) => p !== "cid");
     if (isBasicPassport(o, ignoreCid)) {
         if (!strictValidation) {
             return true;
@@ -61,7 +59,7 @@ export function isPassport(
                 isValidHeight(o.hgt) &&
                 isValidHairColor(o.hcl) &&
                 isValidEyeColor(o.ecl) &&
-                /[0-9]{9}/.test(o.pid)
+                /^[0-9]{9}$/.test(o.pid)
             );
         }
     } else {
