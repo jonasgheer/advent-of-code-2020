@@ -20,3 +20,9 @@ describe("there are ", () => {
         expect(difference.threeDiff).toBe(5);
     });
 });
+
+it("number of valid arangements are 8", () => {
+    expect(
+        numValidArangements([outletJoltage, ...joltages, deviceJoltage])
+    ).toBe(8);
+});

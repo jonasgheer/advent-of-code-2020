@@ -21,3 +21,8 @@ console.log(
     "1-jolt diff multiplied by 3-jolt diff: ",
     joltageDiff.oneDiff * joltageDiff.threeDiff
 );
+
+console.log(
+    "distict valid arangements: ",
+    numValidArangements([outletJoltage, ...joltages, deviceJoltage])
+);
