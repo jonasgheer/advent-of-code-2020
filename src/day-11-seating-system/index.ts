@@ -20,4 +20,8 @@ const waitingArea: Square[][] = fs
         })
     );
 
-console.log("total occupied: ", totalOccupied(waitingArea));
+console.log("total occupied:", totalOccupied(waitingArea, "vicinity"));
+console.log(
+    "total occupied with new rule:",
+    totalOccupied(waitingArea, "visible")
+);

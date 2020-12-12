@@ -1,4 +1,5 @@
-import { cloneDeep } from "lodash";
+import { cloneDeep, uniqBy } from "lodash";
+import { combinations } from "../util";
 
 export type Square = Floor | Seat;
 
@@ -32,6 +33,30 @@ function getAdjacentSquares(
     return adjacent;
 }
 
+function getVisibleSeats(
+    area: Square[][],
+    row: number,
+    column: number
+): Seat[] {
+    const visibleSeats: Seat[] = [];
+    const moves = uniqBy(combinations([1, -1, 0, 1, -1]), String);
+    for (const [moveRow, moveColumn] of moves) {
+        let [currRow, currColumn] = [row, column];
+        while (true) {
+            currRow += moveRow;
+            currColumn += moveColumn;
+            if (currRow < 0 || currRow >= area.length) break;
+            if (currColumn < 0 || currColumn >= area[0].length) break;
+            const currSquare = area[currRow][currColumn];
+            if (isSeat(currSquare)) {
+                visibleSeats.push(currSquare);
+                break;
+            }
+        }
+    }
+    return visibleSeats;
+}
+
 function occupiedAdjecentSquares(
     area: Square[][],
     row: number,
@@ -40,6 +65,15 @@ function occupiedAdjecentSquares(
     return getAdjacentSquares(area, row, column).filter(
         (neighbor) => neighbor.type === "seat" && neighbor.occupied
     ).length;
+}
+
+function occupiedVisibleSeats(
+    area: Square[][],
+    row: number,
+    column: number
+): number {
+    return getVisibleSeats(area, row, column).filter((seat) => seat.occupied)
+        .length;
 }
 
 function isEqual(areaA: Square[][], areaB: Square[][]): boolean {
@@ -56,21 +90,37 @@ function isEqual(areaA: Square[][], areaB: Square[][]): boolean {
     return true;
 }
 
-export function runIteration(area: Square[][]): Square[][] {
+export function runIteration(
+    area: Square[][],
+    criteria: "vicinity" | "visible"
+): Square[][] {
     const newArea = cloneDeep(area);
     for (let row = 0; row < area.length; row++) {
         for (let column = 0; column < area[0].length; column++) {
             const currSquare = newArea[row][column];
             if (currSquare.type === "seat") {
-                const occupiedAdjecent = occupiedAdjecentSquares(
-                    area,
-                    row,
-                    column
-                );
-                if (!currSquare.occupied && occupiedAdjecent === 0) {
+                let occupiedSeats;
+                switch (criteria) {
+                    case "vicinity": {
+                        occupiedSeats = occupiedAdjecentSquares(
+                            area,
+                            row,
+                            column
+                        );
+                        if (currSquare.occupied && occupiedSeats >= 4) {
+                            currSquare.occupied = false;
+                        }
+                        break;
+                    }
+                    case "visible": {
+                        occupiedSeats = occupiedVisibleSeats(area, row, column);
+                        if (currSquare.occupied && occupiedSeats >= 5) {
+                            currSquare.occupied = false;
+                        }
+                    }
+                }
+                if (!currSquare.occupied && occupiedSeats === 0) {
                     currSquare.occupied = true;
-                } else if (currSquare.occupied && occupiedAdjecent >= 4) {
-                    currSquare.occupied = false;
                 }
             }
         }
@@ -78,9 +128,12 @@ export function runIteration(area: Square[][]): Square[][] {
     return newArea;
 }
 
-export function totalOccupied(area: Square[][]): number {
+export function totalOccupied(
+    area: Square[][],
+    criteria: "vicinity" | "visible"
+): number {
     while (true) {
-        const newArea = runIteration(area);
+        const newArea = runIteration(area, criteria);
         if (isEqual(area, newArea)) {
             return area
                 .flatMap((s) => s)
