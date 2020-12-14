@@ -1,4 +1,9 @@
-import { getPosition, Instruction, manhattanDistance } from "./rain";
+import {
+    getPosition,
+    getPositionUsingWaypoint,
+    Instruction,
+    manhattanDistance,
+} from "./rain";
 
 const instructions: Instruction[] = [
     { action: "F", value: 10 },
@@ -11,4 +16,9 @@ const instructions: Instruction[] = [
 it("manhattan distance from starting position", () => {
     const newPosition = getPosition(instructions);
     expect(manhattanDistance(newPosition)).toBe(25);
+});
+
+it("manhattan distance with waypoint is 286", () => {
+    const newPosition = getPositionUsingWaypoint(instructions);
+    expect(manhattanDistance(newPosition)).toBe(286);
 });

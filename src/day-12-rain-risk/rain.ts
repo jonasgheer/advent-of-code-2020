@@ -38,6 +38,37 @@ export function getPosition(instructions: Instruction[]): Position {
     return position;
 }
 
+export function getPositionUsingWaypoint(
+    instructions: Instruction[]
+): Position {
+    const shipPosition = {
+        north: 0,
+        east: 0,
+    };
+    const waypointPosition = {
+        north: 1,
+        east: 10,
+    };
+    for (const instruction of instructions) {
+        if (isDirection(instruction.action)) {
+            changePosition(
+                instruction.action,
+                instruction.value,
+                waypointPosition
+            );
+        } else if (isTurn(instruction.action)) {
+            rotatePosition(
+                instruction.action,
+                instruction.value,
+                waypointPosition
+            );
+        } else {
+            changePosition(waypointPosition, instruction.value, shipPosition);
+        }
+    }
+    return shipPosition;
+}
+
 export function manhattanDistance(
     pos1: Position,
     pos2 = { north: 0, east: 0 }
@@ -46,24 +77,44 @@ export function manhattanDistance(
 }
 
 function changePosition(
-    direction: Direction,
+    direction: Direction | Position,
     value: number,
     position: Position
 ): void {
-    switch (direction) {
-        case "N":
-            position.north += value;
-            break;
-        case "S":
-            position.north -= value;
-            break;
-        case "E":
-            position.east += value;
-            break;
-        case "W":
-            position.east -= value;
-            break;
+    if (typeof direction === "object") {
+        position.north += direction.north * value;
+        position.east += direction.east * value;
+    } else {
+        switch (direction) {
+            case "N":
+                position.north += value;
+                break;
+            case "S":
+                position.north -= value;
+                break;
+            case "E":
+                position.east += value;
+                break;
+            case "W":
+                position.east -= value;
+                break;
+        }
     }
+}
+
+function rotatePosition(turn: Turn, value: number, waypoint: Position): void {
+    const radians = turn === "R" ? toRadians(value) : -toRadians(value);
+    const tmpNorth = waypoint.north;
+    waypoint.north = Math.round(
+        waypoint.north * Math.cos(radians) - waypoint.east * Math.sin(radians)
+    );
+    waypoint.east = Math.round(
+        waypoint.east * Math.cos(radians) + tmpNorth * Math.sin(radians)
+    );
+}
+
+function toRadians(degrees: number) {
+    return degrees * (Math.PI / 180);
 }
 
 function changeDirection(

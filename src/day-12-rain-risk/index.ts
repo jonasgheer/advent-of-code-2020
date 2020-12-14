@@ -1,6 +1,11 @@
 import fs from "fs";
 import path from "path";
-import { getPosition, Instruction, manhattanDistance } from "./rain";
+import {
+    getPosition,
+    getPositionUsingWaypoint,
+    Instruction,
+    manhattanDistance,
+} from "./rain";
 
 const instructions: Instruction[] = fs
     .readFileSync(path.join(__dirname, "input.txt"), "utf-8")
@@ -11,5 +16,12 @@ const instructions: Instruction[] = fs
         value: Number(line.slice(1)),
     }));
 
-const newPosition = getPosition(instructions);
-console.log("manhattan distance from start:", manhattanDistance(newPosition));
+console.log(
+    "manhattan distance from start:",
+    manhattanDistance(getPosition(instructions))
+);
+
+console.log(
+    "manhattan distance using waypoint:",
+    manhattanDistance(getPositionUsingWaypoint(instructions))
+);
